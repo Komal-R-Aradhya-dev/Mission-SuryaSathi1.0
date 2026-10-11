@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  --background: #07110e;
+  --foreground: #f4efe4;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-ink: #07110e;
+  --color-ink-2: #13261e;
+  --color-ivory: #f4efe4;
+  --color-ivory-dim: #c9bfae;
+  --color-amber: #f0a202;
+  --color-amber-deep: #c46b12;
+  --color-mint: #8fceb0;
+  --color-danger: #d46558;
+  --color-card: #101816;
+  --color-card-foreground: #f4efe4;
+  --color-muted-foreground: #c9bfae;
+  --color-background: #07110e;
+  --color-foreground: #f4efe4;
+  --color-primary: #f0a202;
+  --color-primary-foreground: #07110e;
+  --color-secondary: #13261e;
+  --color-secondary-foreground: #f4efe4;
+  --color-muted: #13261e;
+  --color-accent: #1c3a2e;
+  --color-accent-foreground: #f4efe4;
+  --color-destructive: #d46558;
+  --color-input: rgba(244, 239, 228, 0.22);
+  --color-ring: #f0a202;
+  --color-border: rgba(244, 239, 228, 0.16);
+  --font-sans: var(--font-geist-sans), "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html[data-motion="reduce"] {
+  scroll-behavior: auto;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #f0a202;
+  color: #07110e;
+}
+
+:focus-visible {
+  outline: 2px solid #f0a202;
+  outline-offset: 3px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.chapter {
+  scroll-margin-top: 5.5rem;
+}
+
+.loader {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid rgba(244, 239, 228, 0.25);
+  border-top-color: #f0a202;
+  border-radius: 999px;
+  animation: surya-loader 0.8s linear infinite;
+}
+
+@keyframes surya-loader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .loader {
+    animation: none;
+  }
+}
+
+@media print {
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .report-sheet {
+    color: black !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  .report-sheet * {
+    color: black !important;
+  }
+}

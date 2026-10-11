@@ -1,0 +1,26 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+.vercel/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# AWS SAM build artifacts and local deployment config
+.aws-sam/
+samconfig.toml
+
+# OS / logs
+.DS_Store
+*.log

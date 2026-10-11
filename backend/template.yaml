@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SuryaSathi Backend - FastAPI on AWS Lambda behind API Gateway
+
+Parameters:
+  FrontendOrigin:
+    Type: String
+    Default: http://localhost:3000
+    Description: Exact browser origin allowed to call the API and upload to S3 (e.g. the deployed Amplify URL).
+    AllowedPattern: '^https?://[A-Za-z0-9.-]+(:[0-9]+)?$'
+  TokenSecretKey:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Unique random secret of at least 32 characters. Do not reuse or commit this value.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ENVIRONMENT: production
+        API_PREFIX: /api/v1
+        PVGIS_TIMEOUT_SECONDS: 8
+        TOKEN_SECRET_KEY: !Ref TokenSecretKey
+        CORS_ORIGINS: !Sub '["${FrontendOrigin}","http://localhost:3000","http://127.0.0.1:3000"]'
+        S3_UPLOAD_BUCKET: !Ref DocumentUploadBucket
+
+Resources:
+  # Private temporary document upload bucket with a one-day expiration lifecycle.
+  DocumentUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - !Ref FrontendOrigin
+              - http://localhost:3000
+              - http://127.0.0.1:3000
+            AllowedMethods:
+              - PUT
+              - GET
+              - HEAD
+            AllowedHeaders:
+              - '*'
+            ExposedHeaders:
+              - ETag
+            MaxAge: 600
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireTemporaryUploads24Hours
+            Status: Enabled
+            ExpirationInDays: 1
+            Prefix: temporary/
+
+  # API Gateway HTTP API with an explicit browser-origin allowlist.
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref FrontendOrigin
+          - http://localhost:3000
+          - http://127.0.0.1:3000
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        MaxAge: 600
+
+  SuryaSathiApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.main.handler
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref DocumentUploadBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - textract:DetectDocumentText
+                - textract:AnalyzeDocument
+              Resource: '*'
+      Events:
+        RootHealth:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+        ApiRoutes:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/v1/{proxy+}
+            Method: ANY
+
+Outputs:
+  HttpApiUrl:
+    Description: URL of the HTTP API Gateway endpoint
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+  UploadBucketName:
+    Description: Private S3 upload bucket name
+    Value: !Ref DocumentUploadBucket

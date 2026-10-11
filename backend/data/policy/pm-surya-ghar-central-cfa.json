@@ -1,0 +1,13 @@
+{
+  "policy_id": "pm-surya-ghar-central-cfa",
+  "source_url": "https://pmsuryaghar.gov.in/",
+  "retrieved_at": null,
+  "effective_date": null,
+  "verification_status": "not_retrieved",
+  "rules": [],
+  "notes": [
+    "No subsidy amounts, categories, or effective dates are stored in this file.",
+    "A person still needs to open the official portal and record a dated extract before any rule is applied.",
+    "Until that happens, policy checks must stay UNVERIFIED."
+  ]
+}
